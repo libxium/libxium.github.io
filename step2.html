@@ -33,7 +33,7 @@
       opacity: 0;
       transform: translateY(50px);
       animation: fadeSlideUp 1s ease forwards;
-      display: none; /* hidden initially */
+      display: none;
     }
 
     @keyframes fadeSlideUp {
@@ -88,68 +88,56 @@
   </div>
 
   <script>
-    const allowedTokens = [
-      "fhajtyu7",
-      "jkalf75g3",
-      "9dkhfga8e7GHHSfgdhIDH47glag7fglkkfjgka47L",
-      // same tokens as Step 1
-    ];
+    (function() {
+      const allowedTokens = [
+        "fhajtyu7",
+        "jkalf75g3",
+        "9dkhfga8e7GHHSfgdhIDH47glag7fglkkfjgka47L",
+        // Add other allowed tokens here, must match step 1 tokens
+      ];
 
-    function redirectToStep1() {
-      const url = new URL(window.location.origin);
-      const randomToken = allowedTokens[Math.floor(Math.random() * allowedTokens.length)];
-      url.searchParams.set("key", randomToken);
-      window.location.href = url.toString();
-    }
-
-    function getTokenFromURL() {
-      return new URLSearchParams(window.location.search).get("key");
-    }
-
-    function isTokenUsed(token) {
-      return localStorage.getItem("used_token_" + token) === "true";
-    }
-
-    function markTokenUsed(token) {
-      localStorage.setItem("used_token_" + token, "true");
-    }
-
-    window.onload = function () {
-      const urlToken = getTokenFromURL();
-
-      if (!urlToken || !allowedTokens.includes(urlToken)) {
-        // Invalid or missing token → redirect to Step 1
-        redirectToStep1();
-        return;
+      function getTokenFromURL() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("key");
       }
 
-      if (isTokenUsed(urlToken)) {
-        // Token already used → redirect to Step 1
-        redirectToStep1();
-        return;
+      function redirectToIndex() {
+        const randomToken = allowedTokens[Math.floor(Math.random() * allowedTokens.length)];
+        window.location.href = "index.html?key=" + randomToken;
       }
 
-      // Mark token as used to prevent reuse
-      markTokenUsed(urlToken);
+      let urlToken = getTokenFromURL();
+      let usedToken = localStorage.getItem("libxium_used_token");
 
-      // Show container
-      const container = document.querySelector(".container");
-      container.style.display = "block";
+      // Redirect to Step 1 if:
+      // - no token in URL
+      // - token is not in allowedTokens
+      // - token was already used
+      if (!urlToken || !allowedTokens.includes(urlToken) || urlToken === usedToken) {
+        redirectToIndex();
+      } else {
+        // Mark this token as used
+        localStorage.setItem("libxium_used_token", urlToken);
 
-      // Enable captcha continue button on success
-      window.enableButton = function () {
-        const btn = document.getElementById("continueBtn");
-        btn.disabled = false;
-        btn.classList.add("enabled");
-      };
+        // Show container and enable captcha/continue button logic
+        const container = document.querySelector('.container');
+        container.style.display = 'block';
 
-      // Continue button goes to next step (replace with your final or next step URL)
-      document.getElementById("continueBtn").onclick = function () {
-        // Example: final page or thank you page
-        alert("Continue clicked! You can update this to your next URL.");
-        // window.location.href = "final-step.html"; // Uncomment and update this if you have next step
-      };
-    };
+        const btn = document.getElementById('continueBtn');
+
+        window.enableButton = function() {
+          btn.disabled = false;
+          btn.classList.add('enabled');
+        };
+
+        btn.onclick = () => {
+          // TODO: Define what happens after Step 2 continue is clicked
+          alert("Step 2 Continue clicked");
+          // Or redirect to next step/page
+          // window.location.href = "step3.html?key=" + urlToken;
+        };
+      }
+    })();
   </script>
 </body>
 </html>
