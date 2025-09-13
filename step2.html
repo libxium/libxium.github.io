@@ -33,7 +33,6 @@
       opacity: 0;
       transform: translateY(50px);
       animation: fadeSlideUp 1s ease forwards;
-      display: none;
     }
 
     @keyframes fadeSlideUp {
@@ -74,7 +73,7 @@
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="container" style="display:none;">
     <h1>LibXium Key System</h1>
     <div class="step">(Step 2/3)</div>
 
@@ -89,53 +88,55 @@
 
   <script>
     (function() {
-      const allowedTokens = [
-        "fhajtyu7",
-        "jkalf75g3",
-        "9dkhfga8e7GHHSfgdhIDH47glag7fglkkfjgka47L",
-        // Add other allowed tokens here, must match step 1 tokens
-      ];
+      const SECRET_KEY = "gfkjhOUYdg54hJLKDh498hfLjldksjfhlsugo97dgf45gLHDgfh4bvwkhlLIDgf4jlhf7o57";
 
-      function getTokenFromURL() {
+      function getKeyFromURL() {
         const params = new URLSearchParams(window.location.search);
         return params.get("key");
       }
 
-      function redirectToIndex() {
-        const randomToken = allowedTokens[Math.floor(Math.random() * allowedTokens.length)];
-        window.location.href = "index.html?key=" + randomToken;
+      function redirectToStep1() {
+        window.location.href = "index.html";
       }
 
-      let urlToken = getTokenFromURL();
-      let usedToken = localStorage.getItem("libxium_used_token");
+      const urlKey = getKeyFromURL();
+      const sessionKey = sessionStorage.getItem("step2_auth");
 
-      // Redirect to Step 1 if:
-      // - no token in URL
-      // - token is not in allowedTokens
-      // - token was already used
-      if (!urlToken || !allowedTokens.includes(urlToken) || urlToken === usedToken) {
-        redirectToIndex();
+      if (sessionKey === SECRET_KEY) {
+        // Authorized, show content & hide key param
+        showContentAndHideKey();
+      } else if (urlKey === SECRET_KEY) {
+        // First time access with correct key
+        sessionStorage.setItem("step2_auth", SECRET_KEY);
+        showContentAndHideKey();
       } else {
-        // Mark this token as used
-        localStorage.setItem("libxium_used_token", urlToken);
+        // Not authorized → redirect to step 1
+        redirectToStep1();
+      }
 
-        // Show container and enable captcha/continue button logic
-        const container = document.querySelector('.container');
-        container.style.display = 'block';
+      function showContentAndHideKey() {
+        document.querySelector('.container').style.display = "block";
 
-        const btn = document.getElementById('continueBtn');
+        // Hide key param from URL without reload
+        if (window.history.replaceState) {
+          const newURL = window.location.protocol + "//" + window.location.host + window.location.pathname;
+          window.history.replaceState({path: newURL}, "", newURL);
+        }
 
-        window.enableButton = function() {
-          btn.disabled = false;
-          btn.classList.add('enabled');
-        };
-
+        const btn = document.getElementById("continueBtn");
+        btn.disabled = false;
+        btn.classList.add("enabled");
         btn.onclick = () => {
-          // TODO: Define what happens after Step 2 continue is clicked
-          alert("Step 2 Continue clicked");
-          // Or redirect to next step/page
-          // window.location.href = "step3.html?key=" + urlToken;
+          alert("Step 2 complete! Customize this action.");
+          // Add your next-step logic here
         };
+      }
+
+      // Cloudflare captcha callback to enable button
+      window.enableButton = function() {
+        const btn = document.getElementById("continueBtn");
+        btn.disabled = false;
+        btn.classList.add("enabled");
       }
     })();
   </script>
