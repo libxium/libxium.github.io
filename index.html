@@ -87,58 +87,49 @@
   </div>
 
   <script>
-    // Allowed tokens for step 1 URLs - will be randomized and stored in sessionStorage
     const allowedTokens = [
       "fhajtyu7",
       "jkalf75g3",
-      "9dkhfga8e7GHHSfgdhIDH47glag7fglkkfjgka47L"
+      "9dkhfga8e7GHHSfgdhIDH47glag7fglkkfjgka47L",
+      // add more tokens if you want
     ];
 
-    function getTokenFromURL() {
-      const params = new URLSearchParams(window.location.search);
-      return params.get("token");
+    function generateRandomToken() {
+      return allowedTokens[Math.floor(Math.random() * allowedTokens.length)];
     }
 
-    function setRandomToken() {
-      const randomToken = allowedTokens[Math.floor(Math.random() * allowedTokens.length)];
-      // Change URL in address bar without reloading (history.replaceState)
-      const newURL = window.location.origin + window.location.pathname + "?token=" + randomToken;
-      window.history.replaceState(null, '', newURL);
-      sessionStorage.setItem("libxium_token", randomToken);
-      return randomToken;
+    function setTokenInURL(token) {
+      const url = new URL(window.location);
+      url.searchParams.set("key", token);
+      window.history.replaceState({}, "", url);
+      sessionStorage.setItem("libxium_token", token);
     }
 
-    function checkToken() {
-      const urlToken = getTokenFromURL();
-      const storedToken = sessionStorage.getItem("libxium_token");
-
-      if (!urlToken || !allowedTokens.includes(urlToken) || urlToken !== storedToken) {
-        // Token invalid or changed: reset token
-        setRandomToken();
+    function init() {
+      let urlToken = new URLSearchParams(window.location.search).get("key");
+      if (!urlToken || !allowedTokens.includes(urlToken)) {
+        // No valid token → generate new token and update URL
+        const newToken = generateRandomToken();
+        setTokenInURL(newToken);
+      } else {
+        // Valid token → store in sessionStorage
+        sessionStorage.setItem("libxium_token", urlToken);
       }
     }
 
+    init();
+
+    // Enable continue button on captcha success
     function enableButton() {
       const btn = document.getElementById("continueBtn");
       btn.disabled = false;
       btn.classList.add("enabled");
     }
 
-    function openWorkInk() {
+    document.getElementById("continueBtn").onclick = function () {
+      // Open work.ink in a new tab
       window.open("https://work.ink/24mC/rw1lv01h", "_blank");
-    }
-
-    // Run on load
-    (function() {
-      checkToken();
-
-      const btn = document.getElementById("continueBtn");
-      btn.onclick = () => {
-        // Open Work.ink in a new tab
-        openWorkInk();
-        // We keep user on Step 1 page until Work.ink redirects to step 2 on completion
-      }
-    })();
+    };
   </script>
 </body>
 </html>

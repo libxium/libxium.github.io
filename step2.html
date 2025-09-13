@@ -33,7 +33,7 @@
       opacity: 0;
       transform: translateY(50px);
       animation: fadeSlideUp 1s ease forwards;
-      display: none;
+      display: none; /* hidden initially */
     }
 
     @keyframes fadeSlideUp {
@@ -88,46 +88,68 @@
   </div>
 
   <script>
-    // Allowed keys for step 2 from Work.ink redirect (hidden, must match)
-    const allowedKeys = [
-      "fgdhLH73hyohjKLDHf702",
-      // add more keys as needed
+    const allowedTokens = [
+      "fhajtyu7",
+      "jkalf75g3",
+      "9dkhfga8e7GHHSfgdhIDH47glag7fglkkfjgka47L",
+      // same tokens as Step 1
     ];
 
-    function getKeyFromURL() {
-      const params = new URLSearchParams(window.location.search);
-      return params.get("key");
+    function redirectToStep1() {
+      const url = new URL(window.location.origin);
+      const randomToken = allowedTokens[Math.floor(Math.random() * allowedTokens.length)];
+      url.searchParams.set("key", randomToken);
+      window.location.href = url.toString();
     }
 
-    function enableButton() {
-      const btn = document.getElementById("continueBtn");
-      btn.disabled = false;
-      btn.classList.add("enabled");
+    function getTokenFromURL() {
+      return new URLSearchParams(window.location.search).get("key");
     }
 
-    function proceed() {
-      alert("Step 2 complete! You can now proceed to step 3."); 
-      // You can change this to redirect to step 3 or whatever your next step is
+    function isTokenUsed(token) {
+      return localStorage.getItem("used_token_" + token) === "true";
     }
 
-    (function() {
-      const key = getKeyFromURL();
+    function markTokenUsed(token) {
+      localStorage.setItem("used_token_" + token, "true");
+    }
 
-      if (!key || !allowedKeys.includes(key)) {
-        // Invalid or missing key: redirect to step 1 (index.html)
-        window.location.href = "index.html";
+    window.onload = function () {
+      const urlToken = getTokenFromURL();
+
+      if (!urlToken || !allowedTokens.includes(urlToken)) {
+        // Invalid or missing token → redirect to Step 1
+        redirectToStep1();
         return;
       }
 
-      // Show container after validation
-      document.querySelector(".container").style.display = "block";
+      if (isTokenUsed(urlToken)) {
+        // Token already used → redirect to Step 1
+        redirectToStep1();
+        return;
+      }
 
-      // Continue button logic after captcha
-      const btn = document.getElementById("continueBtn");
-      btn.onclick = () => {
-        proceed();
+      // Mark token as used to prevent reuse
+      markTokenUsed(urlToken);
+
+      // Show container
+      const container = document.querySelector(".container");
+      container.style.display = "block";
+
+      // Enable captcha continue button on success
+      window.enableButton = function () {
+        const btn = document.getElementById("continueBtn");
+        btn.disabled = false;
+        btn.classList.add("enabled");
       };
-    })();
+
+      // Continue button goes to next step (replace with your final or next step URL)
+      document.getElementById("continueBtn").onclick = function () {
+        // Example: final page or thank you page
+        alert("Continue clicked! You can update this to your next URL.");
+        // window.location.href = "final-step.html"; // Uncomment and update this if you have next step
+      };
+    };
   </script>
 </body>
 </html>
