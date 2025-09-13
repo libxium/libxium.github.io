@@ -2,89 +2,139 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LibXium Key System</title>
   <link rel="icon" type="image/png" href="favicon.png" />
+
+  <!-- Cloudflare Turnstile -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
   <style>
     body {
-      background-color: #0a192f;
-      color: white;
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
       margin: 0;
+      padding: 0;
+      background-color: #0a192f;
+      font-family: Arial, sans-serif;
+      color: white;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
     }
 
     .container {
       background-color: #112240;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+      border-radius: 12px;
+      padding: 40px 30px;
+      width: 400px;
       text-align: center;
-      display: none;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      transform: translateY(50px);
+      animation: fadeSlideUp 1s ease forwards;
+    }
+
+    @keyframes fadeSlideUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     h1 {
       margin-bottom: 10px;
+      font-size: 24px;
     }
 
     .step {
+      font-size: 16px;
+      color: #a8b2d1;
       margin-bottom: 30px;
-      font-size: 18px;
-      color: #a0aec0;
     }
 
-    button {
-      padding: 10px 20px;
+    #continueBtn {
+      margin-top: 30px;
+      padding: 12px 24px;
       font-size: 16px;
       background-color: #64ffda;
       color: #0a192f;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
+      cursor: not-allowed;
+      opacity: 0.5;
+      transition: all 0.3s ease;
+    }
+
+    #continueBtn.enabled {
       cursor: pointer;
+      opacity: 1;
     }
   </style>
 </head>
 <body>
-  <div class="container" id="mainContainer">
+  <div class="container" id="mainContainer" style="display:none;">
     <h1>LibXium Key System</h1>
     <div class="step">(Step 1/3)</div>
-    <button id="continueBtn">Continue</button>
+
+    <!-- Cloudflare Turnstile Captcha -->
+    <div id="captcha" class="cf-turnstile"
+         data-sitekey="0x4AAAAAAB1DXoTs_569COIX"
+         data-callback="enableButton">
+    </div>
+
+    <button id="continueBtn" disabled>Continue</button>
   </div>
 
   <script>
-    (function () {
-      const allowedTokens = [
-        "fhajtyu7",
-        "jkalf75g3",
-        "9dkhfga8e7GHHSfgdhIDH47glag7fglkkfjgka47L"
-      ];
+    const allowedTokens = [
+      "fhajtyu7",
+      "jkalf75g3",
+      "9dkhfga8e7GHHSfgdhIDH47glag7fglkkfjgka47L"
+    ];
 
-      function getTokenFromURL() {
-        const params = new URLSearchParams(window.location.search);
-        return params.get("token");
+    function getTokenFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("token");
+    }
+
+    function redirectWithNewToken() {
+      const randomToken = allowedTokens[Math.floor(Math.random() * allowedTokens.length)];
+      window.location.replace(`${window.location.pathname}?token=${randomToken}`);
+    }
+
+    const token = getTokenFromURL();
+    const sessionToken = sessionStorage.getItem("libxium_token");
+
+    if (!token || !allowedTokens.includes(token)) {
+      // Invalid or missing token → redirect with new one
+      redirectWithNewToken();
+    } else {
+      // Token is valid
+      // If someone tries editing the token manually after storing, re-lock them in Step 1
+      if (sessionToken && sessionToken !== token) {
+        sessionStorage.removeItem("libxium_token");
+        redirectWithNewToken();
       }
 
-      function redirectWithToken() {
-        const randomToken = allowedTokens[Math.floor(Math.random() * allowedTokens.length)];
-        const newURL = `${window.location.pathname}?token=${randomToken}`;
-        window.location.replace(newURL);
-      }
+      // All good, show the page
+      sessionStorage.setItem("libxium_token", token);
+      document.getElementById("mainContainer").style.display = "block";
 
-      const currentToken = getTokenFromURL();
+      // Enable button when captcha is solved
+      window.enableButton = function () {
+        const btn = document.getElementById("continueBtn");
+        btn.disabled = false;
+        btn.classList.add("enabled");
+      };
 
-      if (!currentToken || !allowedTokens.includes(currentToken)) {
-        redirectWithToken();
-      } else {
-        sessionStorage.setItem("libxium_token", currentToken);
-        document.getElementById("mainContainer").style.display = "block";
-
-        document.getElementById("continueBtn").onclick = () => {
-          window.open("https://work.ink/24mC/rw1lv01h", "_blank");
-        };
-      }
-    })();
+      // Continue button logic
+      document.getElementById("continueBtn").onclick = () => {
+        const secureToken = crypto.randomUUID(); // Unique hidden token
+        sessionStorage.setItem("step2_secure", secureToken);
+        window.location.href = `step2.html?access=${secureToken}`;
+      };
+    }
   </script>
 </body>
 </html>
