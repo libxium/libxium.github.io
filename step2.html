@@ -2,9 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>LibXium Key System - Step 2</title>
   <link rel="icon" type="image/png" href="favicon.png" />
+
+  <!-- Cloudflare Turnstile -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
   <style>
     body {
       margin: 0;
@@ -16,6 +20,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
 
     .container {
@@ -28,6 +33,7 @@
       opacity: 0;
       transform: translateY(50px);
       animation: fadeSlideUp 1s ease forwards;
+      display: none;
     }
 
     @keyframes fadeSlideUp {
@@ -35,6 +41,11 @@
         opacity: 1;
         transform: translateY(0);
       }
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      font-size: 24px;
     }
 
     .step {
@@ -53,6 +64,7 @@
       border-radius: 6px;
       cursor: not-allowed;
       opacity: 0.5;
+      transition: all 0.3s ease;
     }
 
     #continueBtn.enabled {
@@ -62,41 +74,60 @@
   </style>
 </head>
 <body>
-  <div class="container" id="step2Container" style="display:none;">
+  <div class="container">
     <h1>LibXium Key System</h1>
     <div class="step">(Step 2/3)</div>
 
-    <div class="cf-turnstile"
+    <!-- Cloudflare Turnstile Captcha -->
+    <div id="captcha" class="cf-turnstile"
          data-sitekey="0x4AAAAAAB1DXoTs_569COIX"
-         data-callback="enableContinue">
+         data-callback="enableButton">
     </div>
 
     <button id="continueBtn" disabled>Continue</button>
   </div>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const urlKey = params.get("key");
-    const sessionKey = sessionStorage.getItem("step2_key");
+    // Allowed keys for step 2 from Work.ink redirect (hidden, must match)
+    const allowedKeys = [
+      "fgdhLH73hyohjKLDHf702",
+      // add more keys as needed
+    ];
 
-    if (urlKey && urlKey === sessionKey && sessionStorage.getItem("allow_step2") === "yes") {
-      document.getElementById("step2Container").style.display = "block";
-    } else {
-      window.location.href = "index.html"; // unauthorized access
+    function getKeyFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("key");
     }
 
-    function enableContinue() {
+    function enableButton() {
       const btn = document.getElementById("continueBtn");
       btn.disabled = false;
       btn.classList.add("enabled");
-
-      btn.onclick = () => {
-        // Step 3 or download logic here
-        alert("You're now verified! You may continue to the next step.");
-      };
     }
 
-    window.enableContinue = enableContinue;
+    function proceed() {
+      alert("Step 2 complete! You can now proceed to step 3."); 
+      // You can change this to redirect to step 3 or whatever your next step is
+    }
+
+    (function() {
+      const key = getKeyFromURL();
+
+      if (!key || !allowedKeys.includes(key)) {
+        // Invalid or missing key: redirect to step 1 (index.html)
+        window.location.href = "index.html";
+        return;
+      }
+
+      // Show container after validation
+      document.querySelector(".container").style.display = "block";
+
+      // Continue button logic after captcha
+      const btn = document.getElementById("continueBtn");
+      btn.onclick = () => {
+        proceed();
+      };
+    })();
   </script>
 </body>
 </html>

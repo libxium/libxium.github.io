@@ -2,13 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>LibXium Key System</title>
   <link rel="icon" type="image/png" href="favicon.png" />
+
+  <!-- Cloudflare Turnstile -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
   <style>
     body {
-      margin: 0; padding: 0;
+      margin: 0;
+      padding: 0;
       background-color: #0a192f;
       font-family: Arial, sans-serif;
       color: white;
@@ -16,6 +20,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
 
     .container {
@@ -37,6 +42,11 @@
       }
     }
 
+    h1 {
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+
     .step {
       font-size: 16px;
       color: #a8b2d1;
@@ -53,6 +63,7 @@
       border-radius: 6px;
       cursor: not-allowed;
       opacity: 0.5;
+      transition: all 0.3s ease;
     }
 
     #continueBtn.enabled {
@@ -66,30 +77,68 @@
     <h1>LibXium Key System</h1>
     <div class="step">(Step 1/3)</div>
 
-    <!-- Cloudflare Captcha -->
+    <!-- Cloudflare Turnstile Captcha -->
     <div id="captcha" class="cf-turnstile"
          data-sitekey="0x4AAAAAAB1DXoTs_569COIX"
-         data-callback="enableButton"></div>
+         data-callback="enableButton">
+    </div>
 
     <button id="continueBtn" disabled>Continue</button>
   </div>
 
   <script>
-    const secureKey = crypto.randomUUID(); // used for step 2 auth
-    sessionStorage.setItem("step2_key", secureKey);
+    // Allowed tokens for step 1 URLs - will be randomized and stored in sessionStorage
+    const allowedTokens = [
+      "fhajtyu7",
+      "jkalf75g3",
+      "9dkhfga8e7GHHSfgdhIDH47glag7fglkkfjgka47L"
+    ];
+
+    function getTokenFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("token");
+    }
+
+    function setRandomToken() {
+      const randomToken = allowedTokens[Math.floor(Math.random() * allowedTokens.length)];
+      // Change URL in address bar without reloading (history.replaceState)
+      const newURL = window.location.origin + window.location.pathname + "?token=" + randomToken;
+      window.history.replaceState(null, '', newURL);
+      sessionStorage.setItem("libxium_token", randomToken);
+      return randomToken;
+    }
+
+    function checkToken() {
+      const urlToken = getTokenFromURL();
+      const storedToken = sessionStorage.getItem("libxium_token");
+
+      if (!urlToken || !allowedTokens.includes(urlToken) || urlToken !== storedToken) {
+        // Token invalid or changed: reset token
+        setRandomToken();
+      }
+    }
 
     function enableButton() {
       const btn = document.getElementById("continueBtn");
       btn.disabled = false;
       btn.classList.add("enabled");
-
-      btn.onclick = () => {
-        window.open("https://work.ink/24mC/rw1lv01h", "_blank"); // work.ink
-        window.location.href = "wait.html"; // current tab → wait page
-      };
     }
 
-    window.enableButton = enableButton;
+    function openWorkInk() {
+      window.open("https://work.ink/24mC/rw1lv01h", "_blank");
+    }
+
+    // Run on load
+    (function() {
+      checkToken();
+
+      const btn = document.getElementById("continueBtn");
+      btn.onclick = () => {
+        // Open Work.ink in a new tab
+        openWorkInk();
+        // We keep user on Step 1 page until Work.ink redirects to step 2 on completion
+      }
+    })();
   </script>
 </body>
 </html>

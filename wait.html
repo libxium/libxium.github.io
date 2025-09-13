@@ -2,47 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Please complete verification</title>
-  <link rel="icon" type="image/png" href="favicon.png" />
-  <meta http-equiv="refresh" content="15"> <!-- auto-refresh -->
+  <title>Loading...</title>
   <style>
     body {
       background-color: #0a192f;
       color: white;
+      font-family: Arial, sans-serif;
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      font-family: Arial, sans-serif;
-      text-align: center;
-    }
-
-    h1 {
-      font-size: 24px;
-    }
-
-    p {
-      color: #a0aec0;
-      max-width: 80%;
+      margin: 0;
     }
   </style>
 </head>
 <body>
-  <h1>Waiting for completion...</h1>
-  <p>Please complete the verification in the other tab. This page will update automatically once you're done.</p>
-
-  <script>
-    // If user completes work.ink and it redirects to step2.html?key=xxx,
-    // allow access to step2 by validating session key.
-    const sessionKey = sessionStorage.getItem("step2_key");
-
-    if (sessionKey) {
-      // Construct the secure step2 URL
-      const step2URL = `step2.html?key=${sessionKey}`;
-      sessionStorage.setItem("allow_step2", "yes");
-      sessionStorage.setItem("step2_url", step2URL);
-    }
-  </script>
+  <h1>Please wait...</h1>
 </body>
 </html>
