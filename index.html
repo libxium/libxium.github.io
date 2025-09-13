@@ -50,7 +50,6 @@
   <div class="container" id="mainContainer">
     <h1>LibXium Key System</h1>
     <div class="step">(Step 1/3)</div>
-    <!-- captcha could go here -->
     <button id="continueBtn">Continue</button>
   </div>
 
@@ -70,21 +69,18 @@
       function redirectWithToken() {
         const randomToken = allowedTokens[Math.floor(Math.random() * allowedTokens.length)];
         const newURL = `${window.location.pathname}?token=${randomToken}`;
-        window.location.replace(newURL); // avoids adding history entry
+        window.location.replace(newURL);
       }
 
       const currentToken = getTokenFromURL();
 
       if (!currentToken || !allowedTokens.includes(currentToken)) {
-        // Token missing or invalid → redirect
         redirectWithToken();
       } else {
-        // Token valid → store it and show the UI
         sessionStorage.setItem("libxium_token", currentToken);
         document.getElementById("mainContainer").style.display = "block";
 
         document.getElementById("continueBtn").onclick = () => {
-          // ✅ Open your work.ink link in a new tab
           window.open("https://work.ink/24mC/rw1lv01h", "_blank");
         };
       }
