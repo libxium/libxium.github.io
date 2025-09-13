@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>LibXium Key System - Step 2</title>
   <link rel="icon" href="favicon.png" type="image/png" />
-
   <style>
     body {
       margin: 0;
@@ -19,7 +18,6 @@
       justify-content: center;
       overflow: hidden;
     }
-
     .container {
       background-color: #112240;
       border-radius: 12px;
@@ -31,115 +29,77 @@
       transform: translateY(50px);
       animation: fadeSlideUp 1s ease forwards;
     }
-
     @keyframes fadeSlideUp {
       to {
         opacity: 1;
         transform: translateY(0);
       }
     }
-
-    h1 {
-      font-size: 24px;
-      margin-bottom: 10px;
-    }
-
-    .step {
-      font-size: 16px;
-      color: #a8b2d1;
-      margin-bottom: 20px;
-    }
-
-    .message {
-      font-size: 18px;
-      margin: 20px 0;
-    }
-
+    h1 { font-size: 24px; margin-bottom: 10px; }
+    .step { font-size: 16px; color: #a8b2d1; margin-bottom: 20px; }
+    .message { font-size: 18px; margin: 20px 0; }
     #keyBox {
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      border: none;
-      border-radius: 6px;
-      text-align: center;
-      background-color: #0a192f;
-      color: #64ffda;
-      pointer-events: none;
-      user-select: all;
+      width: 100%; padding: 10px; font-size: 16px;
+      border: none; border-radius: 6px; text-align: center;
+      background-color: #0a192f; color: #64ffda;
+      pointer-events: none; user-select: all;
     }
-
     #copyBtn {
-      margin-top: 20px;
-      padding: 10px 20px;
-      background-color: #64ffda;
-      color: #0a192f;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
-      cursor: pointer;
+      margin-top: 20px; padding: 10px 20px;
+      background-color: #64ffda; color: #0a192f;
+      border: none; border-radius: 6px; font-size: 16px; cursor: pointer;
     }
-
     canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      pointer-events: none;
-      z-index: 9999;
+      position: fixed; top: 0; left: 0;
+      pointer-events: none; z-index: 9999;
     }
   </style>
 </head>
 <body>
   <canvas id="confettiCanvas"></canvas>
-
-  <div class="container">
+  <div class="container" id="mainContainer" style="display:none;">
     <h1>LibXium Key System</h1>
     <div class="step">(1/1)</div>
     <div class="message">🎉 Congratulations, you completed all the steps!<br>You may now get your key.</div>
-
-    <input type="text" id="keyBox" readonly value="GENERATED-KEY-PLACEHOLDER" />
-
+    <input type="text" id="keyBox" readonly value="KEY-PLACEHOLDER" />
     <button id="copyBtn">Copy Key</button>
   </div>
 
   <script>
-    // Step 2 protection
-    const VALID_SESSION_KEY = "gfkjhOUYdg54hJLKDh498hfLjldksjfhlsugo97dgf45gLHDgfh4bvwkhlLIDgf4jlhf7o57";
-    const sessionKey = sessionStorage.getItem("step2_auth");
-    if (sessionKey !== VALID_SESSION_KEY) {
+    const VALID_KEY = "gfkjhOUYdg54hJLKDh498hfLjldksjfhlsugo97dgf45gLHDgfh4bvwkhlLIDgf4jlhf7o57";
+    const params = new URLSearchParams(window.location.search);
+    const key = params.get("key");
+
+    // Redirect if invalid or missing
+    if (key !== VALID_KEY) {
       window.location.href = "index.html";
     }
 
-    // Confetti animation
-    setTimeout(() => {
-      startConfetti();
-    }, 1000);
+    // Remove key from URL after load (for security)
+    window.history.replaceState({}, document.title, "step2.html");
 
-    // Copy key to clipboard
+    // Fade in + confetti
+    document.getElementById("mainContainer").style.display = "block";
+    setTimeout(() => startConfetti(), 1000);
+
+    // Generate random key (in real world, you'd fetch one from a backend)
+    const keys = ["KEY-ABC-123", "KEY-XYZ-456", "KEY-LIB-XIUM"];
+    const randomKey = keys[Math.floor(Math.random() * keys.length)];
+    document.getElementById("keyBox").value = randomKey;
+
+    // Copy key
     document.getElementById("copyBtn").onclick = () => {
-      const key = document.getElementById("keyBox").value;
-      navigator.clipboard.writeText(key).then(() => {
+      navigator.clipboard.writeText(randomKey).then(() => {
         alert("Key copied to clipboard!");
       });
     };
 
-    // Dummy random key (replace with backend logic later)
-    const keys = [
-      "KEY-ABC-123",
-      "KEY-XYZ-456",
-      "KEY-MNO-789",
-      "KEY-999-XYZ",
-      "KEY-LIB-XIUM"
-    ];
-    const randomKey = keys[Math.floor(Math.random() * keys.length)];
-    document.getElementById("keyBox").value = randomKey;
-
-    // Confetti (simple canvas burst)
+    // Confetti logic
     function startConfetti() {
       const canvas = document.getElementById("confettiCanvas");
       const ctx = canvas.getContext("2d");
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-
       const confetti = [];
       for (let i = 0; i < 100; i++) {
         confetti.push({
@@ -147,24 +107,21 @@
           y: Math.random() * -canvas.height,
           r: Math.random() * 6 + 4,
           d: Math.random() * 50 + 10,
-          color: `hsl(${Math.random() * 360}, 100%, 50%)`,
-          tilt: Math.random() * 10 - 5
+          color: `hsl(${Math.random() * 360}, 100%, 50%)`
         });
       }
-
       function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        confetti.forEach((c, i) => {
+        confetti.forEach(c => {
           ctx.beginPath();
           ctx.fillStyle = c.color;
           ctx.fillRect(c.x, c.y, c.r, c.r);
         });
         update();
       }
-
       function update() {
-        confetti.forEach((c, i) => {
-          c.y += Math.cos(c.d) + 2;
+        confetti.forEach(c => {
+          c.y += 3;
           c.x += Math.sin(c.d);
           if (c.y > canvas.height) {
             c.y = -10;
@@ -172,12 +129,10 @@
           }
         });
       }
-
       function loop() {
         draw();
         requestAnimationFrame(loop);
       }
-
       loop();
     }
   </script>
