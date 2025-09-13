@@ -22,7 +22,6 @@
       border-radius: 10px;
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
       text-align: center;
-      display: none;
     }
 
     h1 {
@@ -47,42 +46,23 @@
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="container" id="step2Container" style="display:none;">
     <h1>LibXium Key System</h1>
     <div class="step">(Step 2/3)</div>
-    <button id="continueBtn">Continue</button>
+    <button onclick="window.open('https://work.ink/24mC/rw1lv01h', '_blank')">Continue</button>
   </div>
 
   <script>
-    (function () {
-      const allowedTokens = [
-        "fhajtyu7",
-        "jkalf75g3",
-        "9dkhfga8e7GHHSfgdhIDH47glag7fglkkfjgka47L"
-      ];
+    const params = new URLSearchParams(window.location.search);
+    const access = params.get("access");
+    const validAccess = sessionStorage.getItem("step2_secure");
 
-      function getTokenFromURL() {
-        const params = new URLSearchParams(window.location.search);
-        return params.get("token");
-      }
-
-      function redirectToIndex() {
-        const randomToken = allowedTokens[Math.floor(Math.random() * allowedTokens.length)];
-        window.location.href = `index.html?token=${randomToken}`;
-      }
-
-      let urlToken = getTokenFromURL();
-      let storedToken = sessionStorage.getItem("libxium_token");
-
-      if (!urlToken || !allowedTokens.includes(urlToken) || urlToken !== storedToken) {
-        redirectToIndex();
-      } else {
-        document.querySelector('.container').style.display = 'block';
-        document.getElementById('continueBtn').onclick = () => {
-          window.open("https://work.ink/24mC/rw1lv01h", "_blank");
-        };
-      }
-    })();
+    if (access && access === validAccess) {
+      document.getElementById("step2Container").style.display = "block";
+    } else {
+      // Not allowed — redirect back to step 1
+      window.location.href = "index.html";
+    }
   </script>
 </body>
 </html>
