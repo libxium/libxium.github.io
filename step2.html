@@ -1,3 +1,4 @@
+<!-- step2.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -59,9 +60,9 @@
   <canvas id="confettiCanvas"></canvas>
   <div class="container" id="mainContainer" style="display:none;">
     <h1>LibXium Key System</h1>
-    <div class="step">(1/1)</div>
+    <div class="step">(Step 1/1)</div>
     <div class="message">🎉 Congratulations, you completed all the steps!<br>You may now get your key.</div>
-    <input type="text" id="keyBox" readonly value="KEY-PLACEHOLDER" />
+    <input type="text" id="keyBox" readonly value="KEY-WILL-LOAD..." />
     <button id="copyBtn">Copy Key</button>
   </div>
 
@@ -70,31 +71,37 @@
     const params = new URLSearchParams(window.location.search);
     const key = params.get("key");
 
-    // Redirect if invalid or missing
-    if (key !== VALID_KEY) {
+    // 1. Redirect if key is wrong or page is refreshed
+    if (!key || key !== VALID_KEY || sessionStorage.getItem("step2_used") === "yes") {
       window.location.href = "index.html";
     }
 
-    // Remove key from URL after load (for security)
+    // 2. Mark key as used
+    sessionStorage.setItem("step2_used", "yes");
+
+    // 3. Remove key from URL
     window.history.replaceState({}, document.title, "step2.html");
 
-    // Fade in + confetti
-    document.getElementById("mainContainer").style.display = "block";
+    // 4. Show container and confetti
+    const container = document.getElementById("mainContainer");
+    container.style.display = "block";
     setTimeout(() => startConfetti(), 1000);
 
-    // Generate random key (in real world, you'd fetch one from a backend)
-    const keys = ["KEY-ABC-123", "KEY-XYZ-456", "KEY-LIB-XIUM"];
-    const randomKey = keys[Math.floor(Math.random() * keys.length)];
-    document.getElementById("keyBox").value = randomKey;
+    // 5. Key pool (you can replace with .txt/JSON via backend later)
+    const keyList = [
+      "KEY-XIUM-001", "KEY-XIUM-002", "KEY-XIUM-003",
+      "KEY-XIUM-004", "KEY-XIUM-005"
+    ];
+    const selectedKey = keyList[Math.floor(Math.random() * keyList.length)];
+    document.getElementById("keyBox").value = selectedKey;
 
-    // Copy key
+    // 6. Copy button
     document.getElementById("copyBtn").onclick = () => {
-      navigator.clipboard.writeText(randomKey).then(() => {
-        alert("Key copied to clipboard!");
-      });
+      navigator.clipboard.writeText(selectedKey);
+      alert("Copied to clipboard!");
     };
 
-    // Confetti logic
+    // 🎉 Confetti logic
     function startConfetti() {
       const canvas = document.getElementById("confettiCanvas");
       const ctx = canvas.getContext("2d");
@@ -122,18 +129,17 @@
       function update() {
         confetti.forEach(c => {
           c.y += 3;
-          c.x += Math.sin(c.d);
           if (c.y > canvas.height) {
-            c.y = -10;
+            c.y = Math.random() * -canvas.height;
             c.x = Math.random() * canvas.width;
           }
         });
       }
-      function loop() {
+      function animate() {
         draw();
-        requestAnimationFrame(loop);
+        requestAnimationFrame(animate);
       }
-      loop();
+      animate();
     }
   </script>
 </body>

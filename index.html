@@ -1,14 +1,12 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LibXium Key System</title>
   <link rel="icon" type="image/png" href="favicon.png" />
-
-  <!-- Cloudflare Turnstile -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-
   <style>
     body {
       margin: 0;
@@ -22,7 +20,6 @@
       justify-content: center;
       overflow: hidden;
     }
-
     .container {
       background-color: #112240;
       border-radius: 12px;
@@ -34,25 +31,18 @@
       transform: translateY(50px);
       animation: fadeSlideUp 1s ease forwards;
     }
-
     @keyframes fadeSlideUp {
       to {
         opacity: 1;
         transform: translateY(0);
       }
     }
-
-    h1 {
-      margin-bottom: 10px;
-      font-size: 24px;
-    }
-
+    h1 { margin-bottom: 10px; font-size: 24px; }
     .step {
       font-size: 16px;
       color: #a8b2d1;
       margin-bottom: 30px;
     }
-
     #continueBtn {
       margin-top: 30px;
       padding: 12px 24px;
@@ -65,7 +55,6 @@
       opacity: 0.5;
       transition: all 0.3s ease;
     }
-
     #continueBtn.enabled {
       cursor: pointer;
       opacity: 1;
@@ -76,60 +65,22 @@
   <div class="container">
     <h1>LibXium Key System</h1>
     <div class="step">(Step 0/1)</div>
-
-    <!-- Cloudflare Turnstile Captcha -->
-    <div id="captcha" class="cf-turnstile"
-         data-sitekey="0x4AAAAAAB1DXoTs_569COIX"
-         data-callback="enableButton">
-    </div>
-
+    <div class="cf-turnstile" data-sitekey="0x4AAAAAAB1DXoTs_569COIX" data-callback="enableButton"></div>
     <button id="continueBtn" disabled>Continue</button>
   </div>
 
   <script>
-    const allowedTokens = [
-      "fhajtyu7",
-      "jkalf75g3",
-      "9dkhfga8e7GHHSfgdhIDH47glag7fglkkfjgka47L",
-      // add more tokens if you want
-    ];
+    const CONTINUE_LINK = "https://work.ink/24mC/rw1lv01h";
 
-    function generateRandomToken() {
-      return allowedTokens[Math.floor(Math.random() * allowedTokens.length)];
-    }
-
-    function setTokenInURL(token) {
-      const url = new URL(window.location);
-      url.searchParams.set("key", token);
-      window.history.replaceState({}, "", url);
-      sessionStorage.setItem("libxium_token", token);
-    }
-
-    function init() {
-      let urlToken = new URLSearchParams(window.location.search).get("key");
-      if (!urlToken || !allowedTokens.includes(urlToken)) {
-        // No valid token → generate new token and update URL
-        const newToken = generateRandomToken();
-        setTokenInURL(newToken);
-      } else {
-        // Valid token → store in sessionStorage
-        sessionStorage.setItem("libxium_token", urlToken);
-      }
-    }
-
-    init();
-
-    // Enable continue button on captcha success
     function enableButton() {
       const btn = document.getElementById("continueBtn");
       btn.disabled = false;
       btn.classList.add("enabled");
+      btn.onclick = () => {
+        // Redirect to work.ink (with correct token set)
+        window.open(CONTINUE_LINK, "_blank");
+      };
     }
-
-    document.getElementById("continueBtn").onclick = function () {
-      // Open work.ink in a new tab
-      window.open("https://work.ink/24mC/rw1lv01h", "_blank");
-    };
   </script>
 </body>
 </html>
